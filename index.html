@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>回転するシルエット</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #1a1a1a;
+            color: white;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            overflow: hidden;
+            user-select: none;
+        }
+        /* Gif表示エリア */
+        #gif-container {
+            width: 100%;
+            max-width: 300px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        #spinning-dancer {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(255,255,255,0.1);
+        }
+        /* YESボタン（おりん） */
+        #orin-button {
+            width: 220px;
+            height: 80px;
+            background: linear-gradient(145deg, #f1c40f, #d4ac0d);
+            border-radius: 40px;
+            border: 4px solid #b8860b;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            color: white;
+            font-size: 2.5rem;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.1s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        #orin-button:active {
+            transform: scale(0.92);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+        .info {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="gif-container">
+        <img id="spinning-dancer" src="Spinning_Dancer.gif" alt="Spinning Dancer">
+    </div>
+
+    <div id="orin-button">YES</div>
+
+    <div class="info">
+        <p>押すとベルの音がなります</p>
+    </div>
+
+    <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playOrin() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, now); 
+
+            // おりんの「うなり」を再現
+            const osc2 = audioCtx.createOscillator();
+            osc2.frequency.setValueAtTime(881.5, now);
+
+            gain.gain.setValueAtTime(0.5, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 4); 
+
+            osc.connect(gain);
+            osc2.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start();
+            osc2.start();
+            osc.stop(now + 4);
+            osc2.stop(now + 4);
+        }
+
+        const btn = document.getElementById('orin-button');
+        btn.addEventListener('click', playOrin);
+        btn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            playOrin();
+        });
+    </script>
+</body>
+</html>
